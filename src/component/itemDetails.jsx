@@ -30,7 +30,6 @@ const itemDetails = () => {
             setPhotoData(data);
         } catch (err) {
             setPhotoData(null);
-            // setError(err.message);
         }
     };
  
