@@ -1,0 +1,100 @@
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom';
+import '../App.css'
+
+const itemDetails = () => {
+
+    const [photoData, setPhotoData] = useState()
+    const [caption, setCaption] = useState()
+    console.log('image ', photoData)
+
+    const { id } = useParams();
+    let myId = id
+    useEffect(() => {
+        getPhotoById()
+    }, [myId])
+
+    const getPhotoById = async () => {
+
+        const accessKey = '2wgZOVEBhVpcz6VrGOFfcOht4pxUBNjOMef2mS1teBE';
+        const url = `https://api.unsplash.com/photos/${myId}?client_id=${accessKey}`;
+
+        try {
+            const response = await fetch(url);
+            console.log('my get by id data------', response)
+            if (!response.ok) {
+                throw new Error('Photo not found or invalid ID');
+            }
+            const data = await response.json();
+            setPhotoData(data);
+        } catch (err) {
+            setPhotoData(null);
+            // setError(err.message);
+        }
+    };
+ 
+    const downloadPhoto = async () => {
+        if (photoData && photoData.urls && photoData.urls.small) {
+          try {
+            const response = await fetch(photoData.urls.small, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'image/jpeg',
+              },
+            });
+            if (!response.ok) {
+              throw new Error('Failed to download image');
+            }
+            const blob = await response.blob(); 
+            const url = window.URL.createObjectURL(blob); 
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${photoData.id}.jpg`; 
+            document.body.appendChild(link);
+            link.click(); 
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url); 
+          } catch (error) {
+            console.error('Error during download:', error);
+          }
+        } else {
+          console.error('Download link not available.');
+        }
+      };
+      
+      const addCaption = () => {
+        if (caption.trim() === '') {
+          alert('Please enter a caption before adding!');
+        } else {
+          alert(`Caption Added: ${caption}`);
+        }
+      };
+    
+    
+    return (
+        <>
+            <div className='container-fluid'>
+                <div className='row  mt-5 d-flex justify-content-center'>
+                    <div className="col-9 my-card22  " >
+                        <img src={photoData?.urls?.small} alt='image' />
+                        
+                        <p style={{fontSize:18}}>{caption}</p>
+                    </div>
+                    
+                    <div className='col-3 ms-5 pt-5 contentDiv'>
+                        <div class="mb-3">
+                            <label for="exampleFormControlInput1" class="form-label">Write Caption</label>
+                            <input type="email" class="form-control" id="exampleFormControlInput1" onChange={(e)=> setCaption(e.target.value)} placeholder="Enter Caption " />
+                        </div>
+                        <div>
+                        <button onClick={addCaption}>Add Caption</button>
+                        <button className='mt-2' onClick={downloadPhoto}>Download Image</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
+
+export default itemDetails
